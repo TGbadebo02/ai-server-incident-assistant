@@ -4,7 +4,7 @@ def main():
 
     while True:
 
-        user_message_what_happened = get_user_input("What happend?")
+        user_message_what_happened = get_user_input("What happened?")
         if user_message_what_happened.lower() == "quit":
             print("Chatbot: Goodbye!")
             break
@@ -13,8 +13,14 @@ def main():
 
         user_message_when = get_user_input("When did it happen?")
 
+        incident = {
+            "description": user_message_what_happened,
+            "affected_users": user_message_who_affected,
+            "occurred_at": user_message_when,
+        }
+
         print(
-            f"Chatbot: Thank you for the information. You said that '{user_message_what_happened}' happened, affecting '{user_message_who_affected}' on '{user_message_when}'.\n"
+            f"Chatbot: Thank you for the information. You said that '{incident['description']}' happened, affecting '{incident['affected_users']}' on '{incident['occurred_at']}'.\n"
         )
 
 
