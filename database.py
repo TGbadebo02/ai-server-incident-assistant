@@ -20,3 +20,17 @@ def initialize_database():
     )
     connection.commit()
     connection.close()
+
+
+def save_incident(description, affected_users, occurred_at):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+         INSERT INTO incidents (description, affected_users, occurred_at)
+         VALUES (?, ?, ?)
+         """,
+        (description, affected_users, occurred_at),
+    )
+    connection.commit()
+    connection.close()

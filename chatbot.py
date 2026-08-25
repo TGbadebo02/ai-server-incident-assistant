@@ -1,4 +1,9 @@
+from database import initialize_database, save_incident
+
+
 def main():
+    initialize_database()
+
     print("Simple Python Chatbot")
     print("Type 'quit' to exit.\n")
 
@@ -18,6 +23,10 @@ def main():
             "affected_users": user_message_who_affected,
             "occurred_at": user_message_when,
         }
+
+        save_incident(
+            incident["description"], incident["affected_users"], incident["occurred_at"]
+        )
 
         print(
             f"Chatbot: Thank you for the information. You said that '{incident['description']}' happened, affecting '{incident['affected_users']}' on '{incident['occurred_at']}'.\n"
