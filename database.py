@@ -34,3 +34,17 @@ def save_incident(description, affected_users, occurred_at):
     )
     connection.commit()
     connection.close()
+
+
+def list_incidents():
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("""
+        SELECT id, description, affected_users, occurred_at, created_at, status
+        FROM incidents
+        ORDER BY id DESC
+        """)
+
+    incidents = cursor.fetchall()
+    connection.close()
+    return incidents

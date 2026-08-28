@@ -24,6 +24,10 @@ build/
 dist/
 *.egg-info/
 
+# Generated milestone documents and previews
+output/
+tmp/pdfs/
+
 # macOS metadata
 .DS_Store
 

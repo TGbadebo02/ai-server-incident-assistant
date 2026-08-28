@@ -1,4 +1,4 @@
-from database import initialize_database, save_incident
+from database import initialize_database, save_incident, list_incidents
 
 
 def main():
@@ -10,9 +10,25 @@ def main():
     while True:
 
         user_message_what_happened = get_user_input("What happened?")
+
         if user_message_what_happened.lower() == "quit":
             print("Chatbot: Goodbye!")
             break
+
+        if user_message_what_happened.lower() == "list incidents":
+            incidents = list_incidents()
+            if not incidents:
+                print("Chatbot: No incidents found.")
+            else:
+                for incident in incidents:
+                    print(f"\nIncident #{incident[0]}")
+                    print(f"Description: {incident[1]}")
+                    print(f"Affected Users: {incident[2]}")
+                    print(f"Occurred At: {incident[3]}")
+                    print(f"Created At: {incident[4]}")
+                    print(f"Status: {incident[5]}")
+                print()
+            continue
 
         user_message_who_affected = get_user_input("Who was affected by the event")
 
