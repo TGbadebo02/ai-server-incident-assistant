@@ -1,8 +1,14 @@
 from database import initialize_database, save_incident, list_incidents
+import sqlite3
 
 
 def main():
-    initialize_database()
+
+    try:
+        initialize_database()
+    except sqlite3.Error:
+        print("Chatbot: The incident database could not be initialized.\n")
+        return
 
     print("Simple Python Chatbot")
     print("Type 'quit' to exit.\n")
@@ -16,7 +22,11 @@ def main():
             break
 
         if user_message_what_happened.lower() == "list incidents":
-            incidents = list_incidents()
+            try:
+                incidents = list_incidents()
+            except sqlite3.Error:
+                print("Chatbot: The incidents could not be retrieved.\n")
+                continue
             if not incidents:
                 print("Chatbot: No incidents found.")
             else:
@@ -39,10 +49,16 @@ def main():
             "affected_users": user_message_who_affected,
             "occurred_at": user_message_when,
         }
+        try:
+            save_incident(
+                incident["description"],
+                incident["affected_users"],
+                incident["occurred_at"],
+            )
 
-        save_incident(
-            incident["description"], incident["affected_users"], incident["occurred_at"]
-        )
+        except sqlite3.Error:
+            print("Chatbot: The incident could not be saved. Please try again.\n")
+            continue
 
         print(
             f"Chatbot: Thank you for the information. You said that '{incident['description']}' happened, affecting '{incident['affected_users']}' on '{incident['occurred_at']}'.\n"

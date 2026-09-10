@@ -85,3 +85,48 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(len(incidents), 2)
         self.assertEqual(incidents[0][1], "Second incident")
         self.assertEqual(incidents[1][1], "First incident")
+
+    def test_save_incident_closes_connection_when_execute_fails(self):
+        database.initialize_database()
+
+        class FailingCursor:
+            """Stands in for a real cursor and always fails on execute(),
+            simulating a write error partway through save_incident()."""
+
+            def execute(self, *args, **kwargs):
+                raise sqlite3.Error("boom")
+
+        class ConnectionSpy:
+            """Wraps a real connection so we can observe close() calls
+            while still delegating everything else to real sqlite3
+            behavior."""
+
+            def __init__(self, real_connection):
+                self._real_connection = real_connection
+                self.close_calls = 0
+
+            def cursor(self):
+                return FailingCursor()
+
+            def commit(self):
+                self._real_connection.commit()
+
+            def close(self):
+                self.close_calls += 1
+                self._real_connection.close()
+
+        connection_spy = ConnectionSpy(sqlite3.connect(self.database_path))
+
+        with patch("database.get_connection", return_value=connection_spy):
+            with self.assertRaises(sqlite3.Error):
+                database.save_incident(
+                    "Server unavailable",
+                    "All customers",
+                    "2026-08-31 10:00",
+                )
+
+        self.assertEqual(connection_spy.close_calls, 1)
+
+
+if __name__ == "__main__":
+    unittest.main()

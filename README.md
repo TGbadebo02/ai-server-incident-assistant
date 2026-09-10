@@ -15,6 +15,10 @@ designed to remain free to develop and run locally with open-source tools.
 - Rejects empty answers
 - Displays an incident summary
 - Supports repeated incident entry and a `quit` command
+- Saves incidents locally using SQLite
+- Displays saved incidents with the `list incidents` command
+- Handles database failures without crashing
+- Includes automated database and chatbot tests
 
 ## Run locally
 
@@ -28,15 +32,26 @@ designed to remain free to develop and run locally with open-source tools.
 python3 chatbot.py
 ```
 
-Enter `quit` when asked what happened to close the application.
+Enter `list incidents` to display saved incidents.
+
+Enter `quit` to close the application.
 
 ## Project structure
 
 ```text
 ai-chatbot/
-├── chatbot.py     # Current command-line application
-├── README.md      # Project documentation
-└── .gitignore     # Files that Git must not track
+├── chatbot.py        # Command-line application
+├── database.py       # SQLite storage functions
+├── test_chatbot.py   # Chatbot behaviour tests
+├── test_database.py  # Database tests
+├── README.md         # Project documentation
+└── .gitignore        # Files Git must not track
+```
+
+## Run the tests
+
+```bash
+python3 -m unittest -v
 ```
 
 ## Roadmap
@@ -67,4 +82,3 @@ ai-chatbot/
 
 This project is under active development for learning purposes. It is not yet
 ready for use in a production environment.
-# ai-server-incident-assistant
