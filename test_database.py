@@ -145,6 +145,60 @@ class TestDatabase(unittest.TestCase):
         self.assertIn("incident_logs", table_names)
         self.assertIn("incident_metrics", table_names)
 
+    # This test checks that incident_logs has exactly the columns we expect.
+    def test_incident_logs_has_expected_columns(self):
+        # Create all of the database tables inside the temporary test database.
+        database.initialize_database()
+
+        # Open the temporary database and close it automatically when finished.
+        with closing(sqlite3.connect(self.database_path)) as connection:
+            # Ask SQLite for information about every column in incident_logs.
+            results = connection.execute(
+                # PRAGMA table_info returns one row of information per column.
+                "PRAGMA table_info(incident_logs)"
+                # Collect all of the returned rows into a list called results.
+            ).fetchall()
+
+        # In each result row, item 1 is the column's name.
+        # This creates a set containing only the actual column names.
+        column_names = {row[1] for row in results}
+
+        # Define the exact set of column names that incident_logs should contain.
+        expected_columns = {
+            "id",  # The unique ID of this log record.
+            "incident_id",  # The incident that this log belongs to.
+            "recorded_at",  # The date and time when the log was recorded.
+            "level",  # The log severity, such as INFO, WARNING, or ERROR.
+            "source",  # The server or application that produced the log.
+            "message",  # The actual message contained in the log.
+            "created_at",  # The date and time the log was saved in our database.
+        }
+
+        # The test passes only when the actual and expected column names match.
+        self.assertEqual(expected_columns, column_names)
+
+    def test_incident_metrics_has_expected_columns(self):
+        database.initialize_database()
+
+        with closing(sqlite3.connect(self.database_path)) as connection:
+            results = connection.execute(
+                "PRAGMA table_info(incident_metrics)"
+            ).fetchall()
+
+        column_names = {row[1] for row in results}
+
+        expected_columns = {
+            "id",
+            "incident_id",
+            "recorded_at",
+            "name",
+            "value",
+            "unit",
+            "created_at",
+        }
+
+        self.assertEqual(expected_columns, column_names)
+
 
 if __name__ == "__main__":
     unittest.main()
