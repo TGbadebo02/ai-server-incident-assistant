@@ -19,6 +19,35 @@ def initialize_database():
             "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             "status TEXT NOT NULL DEFAULT 'open')"
         )
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS incident_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                incident_id INTEGER NOT NULL,
+                recorded_at TEXT NOT NULL,
+                level TEXT NOT NULL,
+                source TEXT NOT NULL,
+                message TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (incident_id)
+                    REFERENCES incidents(id) ON DELETE CASCADE
+            )
+            """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS incident_metrics (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                incident_id INTEGER NOT NULL,
+                recorded_at TEXT NOT NULL,
+                name TEXT NOT NULL,
+                value REAL NOT NULL,
+                unit TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (incident_id)
+                    REFERENCES incidents(id) ON DELETE CASCADE
+            )
+            """)
+
         connection.commit()
     finally:
         connection.close()

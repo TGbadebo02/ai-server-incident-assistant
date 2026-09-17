@@ -1,5 +1,6 @@
 import sqlite3
 import tempfile
+from contextlib import closing
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -126,6 +127,23 @@ class TestDatabase(unittest.TestCase):
                 )
 
         self.assertEqual(connection_spy.close_calls, 1)
+
+    def test_creates_evidence_tables(self):
+        # Initialize the database and check whether the evidence tables were created.
+        database.initialize_database()
+
+        # Open the database to verify the results of the initialization.
+        with closing(sqlite3.connect(self.database_path)) as connection:
+            results = connection.execute("""
+                SELECT name
+                FROM sqlite_master
+                WHERE type = 'table'
+                """).fetchall()
+
+        table_names = {row[0] for row in results}
+
+        self.assertIn("incident_logs", table_names)
+        self.assertIn("incident_metrics", table_names)
 
 
 if __name__ == "__main__":
