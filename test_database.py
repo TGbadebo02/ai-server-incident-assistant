@@ -199,6 +199,19 @@ class TestDatabase(unittest.TestCase):
 
         self.assertEqual(expected_columns, column_names)
 
+    def test_save_incident_log(self):
+        database.initialize_database()
+
+        database.save_incident(
+            "description",
+            "affected_users",
+            "occurred_at",
+        )
+
+        incidents = database.list_incidents()
+
+        incident_id = incidents[0][0]
+
 
 if __name__ == "__main__":
     unittest.main()
