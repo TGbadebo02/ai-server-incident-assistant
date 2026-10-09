@@ -84,6 +84,21 @@ def save_incident_log(incident_id, recorded_at, level, source, message):
         connection.close()
 
 
+def save_incident_metric(incident_id, recorded_at, name, value, unit):
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            """INSERT INTO incident_metrics (incident_id, recorded_at, name, value, unit)
+            VALUES (?, ?, ?, ?, ?)""",
+            (incident_id, recorded_at, name, value, unit),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
 def list_incidents():
     connection = get_connection()
     try:

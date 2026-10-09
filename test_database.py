@@ -212,7 +212,13 @@ class TestDatabase(unittest.TestCase):
 
         incident_id = incidents[0][0]
 
-        database.save_incident_log(incident_id, "2026-10-09 10:02", "ERROR", "web-server-01", "Database connection timed out")
+        database.save_incident_log(
+            incident_id,
+            "2026-10-09 10:02",
+            "ERROR",
+            "web-server-01",
+            "Database connection timed out",
+        )
 
         with closing(sqlite3.connect(self.database_path)) as connection:
             saved_log = connection.execute("""
@@ -227,7 +233,36 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(saved_log[3], "web-server-01")
         self.assertEqual(saved_log[4], "Database connection timed out")
 
-        
+    def test_save_incident_metric(self):
+        database.initialize_database()
+
+        database.save_incident(
+            "Website responding slowly",
+            "All customers",
+            "2026-10-09 10:00",
+        )
+
+        incidents = database.list_incidents()
+
+        incident_id = incidents[0][0]
+
+        database.save_incident_metric(
+            incident_id, "2026-10-09 10:02", "CPU Usage", 75.5, "%"
+        )
+
+        with closing(sqlite3.connect(self.database_path)) as connection:
+            saved_metric = connection.execute("""
+                SELECT incident_id, recorded_at, name, value, unit
+                FROM incident_metrics
+                """).fetchone()
+
+        self.assertIsNotNone(saved_metric)
+        self.assertEqual(saved_metric[0], incident_id)
+        self.assertEqual(saved_metric[1], "2026-10-09 10:02")
+        self.assertEqual(saved_metric[2], "CPU Usage")
+        self.assertEqual(saved_metric[3], 75.5)
+        self.assertEqual(saved_metric[4], "%")
+
 
 if __name__ == "__main__":
     unittest.main()
