@@ -212,6 +212,22 @@ class TestDatabase(unittest.TestCase):
 
         incident_id = incidents[0][0]
 
+        database.save_incident_log(incident_id, "2026-10-09 10:02", "ERROR", "web-server-01", "Database connection timed out")
+
+        with closing(sqlite3.connect(self.database_path)) as connection:
+            saved_log = connection.execute("""
+                SELECT incident_id, recorded_at, level, source, message
+                FROM incident_logs
+                """).fetchone()
+
+        self.assertIsNotNone(saved_log)
+        self.assertEqual(saved_log[0], incident_id)
+        self.assertEqual(saved_log[1], "2026-10-09 10:02")
+        self.assertEqual(saved_log[2], "ERROR")
+        self.assertEqual(saved_log[3], "web-server-01")
+        self.assertEqual(saved_log[4], "Database connection timed out")
+
+        
 
 if __name__ == "__main__":
     unittest.main()
