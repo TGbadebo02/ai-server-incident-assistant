@@ -113,3 +113,23 @@ def list_incidents():
         return incidents
     finally:
         connection.close()
+
+
+def list_incident_logs(incident_id):
+    connection = get_connection()
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT id, incident_id, recorded_at, level, source, message, created_at
+            from incident_logs
+            WHERE incident_id = ?
+            ORDER BY id ASC
+            """,
+            (incident_id,),
+        )
+
+        logs = cursor.fetchall()
+        return logs
+    finally:
+        connection.close()

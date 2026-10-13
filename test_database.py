@@ -263,6 +263,68 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(saved_metric[3], 75.5)
         self.assertEqual(saved_metric[4], "%")
 
+    def test_list_incidents_logs_returns_only_matching_logs(self):
+        database.initialize_database()
+
+        database.save_incident(
+            "Website unavailable",
+            "All customers",
+            "2026-10-13 10:00",
+        )
+
+        database.save_incident(
+            "Scheduled backup failed",
+            "IT operations",
+            "2026-10-13 10:05",
+        )
+
+        incidents = database.list_incidents()
+
+        incident_a_id = None
+        incident_b_id = None
+
+        for incident in incidents:
+            if incident[1] == "Website unavailable":
+                incident_a_id = incident[0]
+            elif incident[1] == "Scheduled backup failed":
+                incident_b_id = incident[0]
+
+        self.assertIsNotNone(incident_a_id)
+        self.assertIsNotNone(incident_b_id)
+
+        database.save_incident_log(
+            incident_a_id,
+            "2026-10-13 10:02",
+            "ERROR",
+            "web-server-01",
+            "Connection retry failed",
+        )
+
+        database.save_incident_log(
+            incident_a_id,
+            "2026-10-13 10:02",
+            "INFO",
+            "web-server-01",
+            "Connection retry started",
+        )
+
+        database.save_incident_log(
+            incident_b_id,
+            "2026-10-13 10:06",
+            "ERROR",
+            "backup-server-01",
+            "Backup destination unreachable",
+        )
+
+        # Retrieve only the website incident's logs.
+        logs = database.list_incident_logs(incident_a_id)
+
+        self.assertEqual(len(logs), 2)
+        self.assertEqual(logs[0][1], incident_a_id)
+        self.assertEqual(logs[1][1], incident_a_id)
+        self.assertEqual(logs[0][5], "Connection retry failed")
+        self.assertEqual(logs[1][5], "Connection retry started")
+        self.assertLess(logs[0][0], logs[1][0])
 
 if __name__ == "__main__":
     unittest.main()
