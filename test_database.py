@@ -326,5 +326,64 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(logs[1][5], "Connection retry started")
         self.assertLess(logs[0][0], logs[1][0])
 
+    def test_list_incidents_logs_returns_empty_list(self):
+        database.initialize_database()
+
+        database.save_incident(
+            "Website unavailable",
+            "All customers",
+            "2026-10-15 10:00",
+        )
+
+        incident_id = database.list_incidents()[0][0]
+
+        logs = database.list_incident_logs(incident_id)
+
+        self.assertEqual(logs, [])
+
+    def test_list_incident_metrics_returns_only_matching_metrics(self):
+        database.initialize_database()
+
+        database.save_incident(
+            "Scheduled backup failed",
+            "IT operations",
+            "2026-10-21 10:00",
+        )
+        incident_b_id = database.list_incidents()[0][0]
+
+        database.save_incident(
+            "Website unavailable",
+            "All customers",
+            "2026-10-21 10:05",
+        )
+        incident_a_id = database.list_incidents()[0][0]
+
+        database.save_incident_metric(
+            incident_a_id, "2026-10-21 10:06", "cpu_usage", 75.5, "percent"
+        )
+        database.save_incident_metric(
+            incident_b_id, "2026-10-21 10:06", "cpu_usage", 20.0, "percent"
+        )
+        database.save_incident_metric(
+            incident_a_id, "2026-10-21 10:06", "memory_usage", 88.0, "percent"
+        )
+
+        metrics = database.list_incident_metrics(incident_a_id)
+
+        self.assertEqual(len(metrics), 2)
+        self.assertEqual(metrics[0][1], incident_a_id)
+        self.assertEqual(metrics[1][1], incident_a_id)
+        self.assertEqual(metrics[0][2], "2026-10-21 10:06")
+        self.assertEqual(metrics[1][2], "2026-10-21 10:06")
+        self.assertEqual(metrics[0][3], "cpu_usage")
+        self.assertEqual(metrics[0][4], 75.5)
+        self.assertEqual(metrics[0][5], "percent")
+        self.assertEqual(metrics[1][3], "memory_usage")
+        self.assertEqual(metrics[1][4], 88.0)
+        self.assertEqual(metrics[1][5], "percent")
+
+        self.assertLess(metrics[0][0], metrics[1][0])
+
+
 if __name__ == "__main__":
     unittest.main()
