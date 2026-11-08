@@ -384,6 +384,20 @@ class TestDatabase(unittest.TestCase):
 
         self.assertLess(metrics[0][0], metrics[1][0])
 
+    def test_list_incident_metrics_returns_empty_list(self):
+        database.initialize_database()
+
+        database.save_incident(
+            "Website unavailable",
+            "All customers",
+            "2026-11-08 10:00",
+        )
+        incident_id = database.list_incidents()[0][0]
+
+        metrics = database.list_incident_metrics(incident_id)
+
+        self.assertEqual(metrics, [])
+
 
 if __name__ == "__main__":
     unittest.main()
